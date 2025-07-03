@@ -40,7 +40,6 @@
         .toast-fade-out {
             animation: fade-out 0.5s ease-out forwards;
         }
-
         /* --- Theme Palettes --- */
         .light {
              --bg-primary: #F3F4F6; /* gray-100 */
@@ -84,6 +83,12 @@
         .themed {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
+        /* Styles for message content iframe */
+        #messageContentFrame {
+            border: none;
+            width: 100%;
+            height: 40vh;
+        }
     </style>
 </head>
 <body class="themed bg-[var(--bg-primary)]">
@@ -101,22 +106,23 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto p-4 md:p-8 max-w-2xl">
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
         <header class="text-center mb-8 relative">
             <h1 class="text-3xl md:text-4xl font-bold text-[var(--text-primary)] themed">Gmailnator API Client</h1>
-            <p class="text-[var(--text-secondary)] mt-2 themed">Generate temporary Gmail accounts.</p>
+            <p class="text-[var(--text-secondary)] mt-2 themed">Generate and manage temporary Gmail accounts.</p>
         </header>
 
-        <main>
-            <!-- API Key Input -->
-            <div class="themed bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md mb-8">
-                <label for="apiKey" class="block text-lg font-medium text-[var(--text-primary)] mb-2 themed">RapidAPI Key</label>
-                <input type="password" id="apiKey" class="themed w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-[var(--hover-accent)]" placeholder="Enter your RapidAPI Key here">
-                <p class="text-sm text-[var(--text-secondary)] mt-2 themed">Your API key is saved securely and automatically loaded.</p>
-            </div>
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column: Generation -->
+            <div class="space-y-8">
+                <!-- API Key Input -->
+                <div class="themed bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md">
+                    <label for="apiKey" class="block text-lg font-medium text-[var(--text-primary)] mb-2 themed">RapidAPI Key</label>
+                    <input type="password" id="apiKey" class="themed w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-[var(--hover-accent)]" placeholder="Enter your RapidAPI Key here">
+                    <p class="text-sm text-[var(--text-secondary)] mt-2 themed">Your API key is saved securely and automatically loaded.</p>
+                </div>
 
-            <!-- Email Generation -->
-            <div class="flex justify-center">
+                <!-- Email Generation -->
                 <div class="themed bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md w-full">
                     <h2 class="themed text-2xl font-semibold mb-4 text-[var(--text-primary)]">Generate Emails</h2>
                     <div class="space-y-4">
@@ -124,8 +130,20 @@
                             <div>
                                 <label for="emailType" class="themed block text-sm font-medium text-[var(--text-primary)]">Email Type</label>
                                 <select id="emailType" class="themed w-full mt-1 px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg">
-                                    <option value="2">Plus Trick</option>
-                                    <option value="3">Dot Trick</option>
+                                    <optgroup label="Public Gmail">
+                                        <option value="2">Plus Trick (+)</option>
+                                        <option value="3">Dot Trick (.)</option>
+                                    </optgroup>
+                                    <optgroup label="Public Googlemail">
+                                        <option value="8">Googlemail</option>
+                                    </optgroup>
+                                    <optgroup label="Private Domains">
+                                        <option value="1">Public Domain</option>
+                                        <option value="4">Private Domain</option>
+                                        <option value="5">Private Plus (+)</option>
+                                        <option value="6">Private Dot (.)</option>
+                                        <option value="9">Private Googlemail</option>
+                                    </optgroup>
                                 </select>
                             </div>
                              <div>
@@ -139,35 +157,58 @@
                         </div>
                         <button id="generateBtn" class="themed w-full bg-[var(--btn-primary)] text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 flex items-center justify-center btn-hover">
                             <span id="generateSpinner" class="hidden spinner mr-2"></span>
-                            Generate Email(s)
+                            Generate & Save Email(s)
                         </button>
-                    </div>
-                    <div class="themed mt-4 p-4 bg-[var(--bg-primary)] rounded-lg">
-                        <div id="emptyState" class="themed text-center text-[var(--text-secondary)]">
-                            Your generated emails will appear here.
-                        </div>
-                        <div id="resultsWrapper" class="hidden">
-                           <div id="emailList" class="space-y-2"></div>
-                           <div id="resultActions" class="mt-4 flex gap-2">
-                               <button id="copyAllBtn" class="themed flex-1 bg-[var(--btn-success)] text-black font-bold py-2 px-4 rounded-lg text-sm btn-hover">Copy All</button>
-                               <button id="clearResultsBtn" class="themed flex-1 bg-[var(--btn-danger)] text-white font-bold py-2 px-4 rounded-lg text-sm btn-hover">Clear Results</button>
-                           </div>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Alert Modal -->
-            <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-                <div class="themed bg-[var(--bg-secondary)] rounded-xl shadow-xl max-w-md w-full p-6 text-center border border-[var(--border-color)]">
-                   <h4 id="alertTitle" class="themed text-xl font-bold text-[var(--text-primary)] mb-4"></h4>
-                   <p id="alertBody" class="themed text-[var(--text-primary)]"></p>
-                   <button id="closeAlertBtn" class="themed mt-6 bg-[var(--btn-primary)] text-white font-bold py-2 px-6 rounded-lg btn-hover">OK</button>
+            <!-- Right Column: Saved Inboxes -->
+            <div class="themed bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md">
+                <h2 class="themed text-2xl font-semibold mb-4 text-[var(--text-primary)]">My Inboxes</h2>
+                <div id="savedInboxesContainer" class="space-y-3">
+                    <!-- Saved inboxes will be dynamically inserted here -->
+                    <p id="noInboxesMessage" class="themed text-center text-[var(--text-secondary)] py-4">Generate an email to see it here.</p>
                 </div>
             </div>
         </main>
     </div>
     
+    <!-- Modals -->
+    <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="themed bg-[var(--bg-secondary)] rounded-xl shadow-xl max-w-md w-full p-6 text-center border border-[var(--border-color)]">
+           <h4 id="alertTitle" class="themed text-xl font-bold text-[var(--text-primary)] mb-4"></h4>
+           <p id="alertBody" class="themed text-[var(--text-primary)]"></p>
+           <button id="closeAlertBtn" class="themed mt-6 bg-[var(--btn-primary)] text-white font-bold py-2 px-6 rounded-lg btn-hover">OK</button>
+        </div>
+    </div>
+
+    <!-- Message List Modal -->
+    <div id="messageListModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="themed bg-[var(--bg-secondary)] rounded-xl shadow-xl max-w-2xl w-full p-6 border border-[var(--border-color)]">
+           <div class="flex justify-between items-center mb-4">
+                <h4 id="messageListTitle" class="themed text-xl font-bold text-[var(--text-primary)]">Inbox</h4>
+                <button id="closeMessageListBtn" class="themed text-[var(--text-primary)]">&times;</button>
+           </div>
+           <div id="messageListBody" class="max-h-[60vh] overflow-y-auto">
+               <!-- Messages will be dynamically inserted here -->
+           </div>
+        </div>
+    </div>
+
+    <!-- Message Content Modal -->
+    <div id="messageContentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="themed bg-[var(--bg-secondary)] rounded-xl shadow-xl max-w-3xl w-full p-6 border border-[var(--border-color)]">
+            <div class="flex justify-between items-center mb-4">
+                <h4 id="messageContentSubject" class="themed text-xl font-bold text-[var(--text-primary)]">Message</h4>
+                <button id="closeMessageContentBtn" class="themed text-[var(--text-primary)]">&times;</button>
+            </div>
+            <div id="messageContentBody" class="themed bg-[var(--bg-primary)] p-4 rounded-lg">
+                <iframe id="messageContentFrame"></iframe>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
 
@@ -175,11 +216,9 @@
     <script type="module">
         // Import the functions you need from the Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- IMPORTANT: PASTE YOUR FIREBASE CONFIGURATION HERE ---
-        // Replace the placeholder values below with the configuration object
-        // from your Firebase project's settings.
 		const firebaseConfig = {
 		  apiKey: "AIzaSyDp6RfzizWNW08YW3jLEEAuRfr1jU1D8f4",
 		  authDomain: "mailgen-app-58e80.firebaseapp.com",
@@ -202,15 +241,25 @@
         const generateSpinner = generateBtn.querySelector('.spinner');
         const emailTypeSelect = document.getElementById('emailType');
         const emailCountSelect = document.getElementById('emailCount');
-        const emptyState = document.getElementById('emptyState');
-        const resultsWrapper = document.getElementById('resultsWrapper');
-        const emailListDiv = document.getElementById('emailList');
-        const copyAllBtn = document.getElementById('copyAllBtn');
-        const clearResultsBtn = document.getElementById('clearResultsBtn');
+        const savedInboxesContainer = document.getElementById('savedInboxesContainer');
+        const noInboxesMessage = document.getElementById('noInboxesMessage');
+        
+        // Modals and their components
         const alertModal = document.getElementById('alertModal');
         const alertTitle = document.getElementById('alertTitle');
         const alertBody = document.getElementById('alertBody');
         const closeAlertBtn = document.getElementById('closeAlertBtn');
+        
+        const messageListModal = document.getElementById('messageListModal');
+        const messageListTitle = document.getElementById('messageListTitle');
+        const messageListBody = document.getElementById('messageListBody');
+        const closeMessageListBtn = document.getElementById('closeMessageListBtn');
+
+        const messageContentModal = document.getElementById('messageContentModal');
+        const messageContentSubject = document.getElementById('messageContentSubject');
+        const messageContentFrame = document.getElementById('messageContentFrame');
+        const closeMessageContentBtn = document.getElementById('closeMessageContentBtn');
+
         const toastContainer = document.getElementById('toastContainer');
         const themePickerContainer = document.getElementById('theme-picker-container');
         const themePickerButton = document.getElementById('theme-picker-button');
@@ -219,14 +268,12 @@
 
         // --- App State & Config ---
         const API_HOST = 'gmailnator.p.rapidapi.com';
-        let currentEmails = [];
         let manualTheme = false;
-        let userId = null; // A unique ID for the user's browser/session
+        let userId = null;
 
-        // --- User Identification (Robust Version) ---
+        // --- User Identification ---
         function getUserId() {
             try {
-                // Try to get the ID from local storage first
                 let id = localStorage.getItem('mailgenUserId');
                 if (!id) {
                     id = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -234,7 +281,6 @@
                 }
                 return id;
             } catch (e) {
-                // If local storage is disabled (e.g., private browsing), create a temporary ID
                 console.warn("Local storage is not available. Using a session-only user ID.");
                 return `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
             }
@@ -247,29 +293,69 @@
                 const userDocRef = doc(db, "users", userId);
                 await setDoc(userDocRef, { apiKey: key }, { merge: true });
             } catch (error) {
-                console.error("Error saving API key to Firestore: ", error);
-                showToast("Could not save API key.", "error");
+                console.error("Error saving API key: ", error);
             }
         }
         
         async function loadApiKey() {
-            if (!userId) return;
+            if (!userId) return null;
             try {
                 const userDocRef = doc(db, "users", userId);
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists() && docSnap.data().apiKey) {
                     apiKeyInput.value = docSnap.data().apiKey;
+                    return docSnap.data().apiKey;
                 }
+                return null;
             } catch (error) {
-                console.error("Error loading API key from Firestore: ", error);
+                console.error("Error loading API key: ", error);
+                return null;
             }
         }
 
-        // --- Initial Load ---
+        async function saveEmailsToFirestore(emails) {
+            if (!userId || !emails || emails.length === 0) return;
+            try {
+                const userDocRef = doc(db, "users", userId);
+                await setDoc(userDocRef, {
+                    emails: arrayUnion(...emails)
+                }, { merge: true });
+            } catch (error) {
+                console.error("Error saving emails:", error);
+                showToast("Could not save new emails.", "error");
+            }
+        }
+
+        async function removeEmailFromFirestore(email) {
+            if (!userId || !email) return;
+            try {
+                const userDocRef = doc(db, "users", userId);
+                await setDoc(userDocRef, {
+                    emails: arrayRemove(email)
+                }, { merge: true });
+                showToast(`${email} removed.`, 'success');
+            } catch (error) {
+                console.error("Error removing email:", error);
+                showToast("Could not remove email.", "error");
+            }
+        }
+
+        // --- Initial Load & Real-time Listener ---
         async function initialize() {
             userId = getUserId();
             await loadApiKey();
 
+            // Setup real-time listener for inboxes
+            const userDocRef = doc(db, "users", userId);
+            onSnapshot(userDocRef, (doc) => {
+                if (doc.exists() && doc.data().emails) {
+                    displaySavedInboxes(doc.data().emails);
+                } else {
+                    displaySavedInboxes([]); // Clear the list if no emails
+                }
+            });
+
+            // Theme setup
             const savedTheme = localStorage.getItem('theme');
             if(savedTheme) {
                 manualTheme = true;
@@ -280,27 +366,22 @@
             }
         }
 
-        // --- Main API Call Logic ---
+        // --- API Call Logic ---
         async function handleGenerateEmail() {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
                 showAlert('API Key Missing', 'Please enter your RapidAPI Key.');
                 return;
             }
-
             setLoading(generateBtn, true);
-            clearResults();
-
             const count = parseInt(emailCountSelect.value, 10);
             const type = emailTypeSelect.value;
-            const optionsArray = [parseInt(type, 10)];
-            const isBulk = count > 1;
-            const url = `https://${API_HOST}/${isBulk ? 'bulk-emails' : 'generate-email'}`;
-            const body = isBulk ? JSON.stringify({ limit: count, options: optionsArray }) : JSON.stringify({ options: optionsArray });
+            const url = `https://${API_HOST}/${count > 1 ? 'bulk-emails' : 'generate-email'}`;
+            const body = count > 1 ? { limit: count, options: [parseInt(type, 10)] } : { options: [parseInt(type, 10)] };
             const fetchOptions = {
                 method: 'POST',
                 headers: { 'content-type': 'application/json', 'X-RapidAPI-Key': apiKey, 'X-RapidAPI-Host': API_HOST },
-                body: body
+                body: JSON.stringify(body)
             };
 
             try {
@@ -309,32 +390,132 @@
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-                
-                await saveApiKey(apiKey); // Save key to Firestore on success
-                
+                await saveApiKey(apiKey);
                 const data = await response.json();
-                let emails = [];
-                if (isBulk && Array.isArray(data)) {
-                    emails = data;
-                } else if (!isBulk && data.email) {
-                    emails = [data.email];
-                } else {
-                    throw new Error('Invalid response structure from API.');
-                }
-
+                const emails = Array.isArray(data) ? data : (data.email ? [data.email] : []);
                 if (emails.length > 0) {
-                    currentEmails = emails;
-                    displayGeneratedEmails(emails);
+                    await saveEmailsToFirestore(emails);
+                    showToast(`${emails.length} email(s) generated and saved!`, 'success');
                 }
-
             } catch (error) {
                 showAlert('Error', `Failed to generate email(s): ${error.message}`);
             } finally {
                 setLoading(generateBtn, false);
             }
         }
+
+        async function handleCheckInbox(email) {
+            const apiKey = await loadApiKey();
+            if (!apiKey) {
+                showAlert('API Key Missing', 'Please ensure your API key is entered.');
+                return;
+            }
+            messageListTitle.textContent = `Inbox: ${email}`;
+            messageListBody.innerHTML = `<div class="flex justify-center p-4"><div class="spinner"></div></div>`;
+            messageListModal.classList.remove('hidden');
+
+            const fetchOptions = {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', 'X-RapidAPI-Key': apiKey, 'X-RapidAPI-Host': API_HOST },
+                body: JSON.stringify({ email: email })
+            };
+
+            try {
+                const response = await fetch(`https://${API_HOST}/inbox`, fetchOptions);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                displayMessages(data.messages || []);
+            } catch (error) {
+                messageListBody.innerHTML = `<p class="themed text-center text-[var(--text-secondary)]">Failed to load messages: ${error.message}</p>`;
+            }
+        }
+
+        async function handleViewMessage(messageId) {
+            const apiKey = await loadApiKey();
+            if (!apiKey) {
+                showAlert('API Key Missing', 'Cannot retrieve message.');
+                return;
+            }
+            messageContentSubject.textContent = 'Loading message...';
+            messageContentFrame.srcdoc = `<div style="font-family: sans-serif; color: var(--text-primary);">Loading...</div>`;
+            messageContentModal.classList.remove('hidden');
+
+            const fetchOptions = {
+                method: 'GET',
+                headers: { 'X-RapidAPI-Key': apiKey, 'X-RapidAPI-Host': API_HOST }
+            };
+
+            try {
+                const response = await fetch(`https://${API_HOST}/messageid?id=${messageId}`, fetchOptions);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                messageContentSubject.textContent = data.from;
+                messageContentFrame.srcdoc = data.message;
+            } catch (error) {
+                messageContentSubject.textContent = 'Error';
+                messageContentFrame.srcdoc = `<div style="font-family: sans-serif; color: var(--text-danger);">Failed to load message: ${error.message}</div>`;
+            }
+        }
         
         // --- UI & Utility Functions ---
+        function displaySavedInboxes(emails) {
+            savedInboxesContainer.innerHTML = '';
+            if (emails.length === 0) {
+                savedInboxesContainer.appendChild(noInboxesMessage);
+                noInboxesMessage.classList.remove('hidden');
+                return;
+            }
+            noInboxesMessage.classList.add('hidden');
+
+            emails.forEach(email => {
+                const div = document.createElement('div');
+                div.className = 'themed flex items-center justify-between font-mono text-sm p-3 bg-[var(--bg-primary)] rounded-lg';
+                
+                const emailSpan = document.createElement('span');
+                emailSpan.className = 'text-[var(--text-primary)] themed truncate mr-2';
+                emailSpan.textContent = email;
+                
+                const actionsWrapper = document.createElement('div');
+                actionsWrapper.className = 'flex items-center gap-2 flex-shrink-0';
+
+                const checkBtn = document.createElement('button');
+                checkBtn.textContent = 'Check Inbox';
+                checkBtn.className = 'text-xs bg-[var(--btn-primary)] text-white font-bold py-1 px-2 rounded btn-hover';
+                checkBtn.onclick = () => handleCheckInbox(email);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '&#x1F5D1;'; // Trash can icon
+                deleteBtn.className = 'text-xs bg-[var(--btn-danger)] text-white font-bold py-1 px-2 rounded btn-hover';
+                deleteBtn.onclick = () => removeEmailFromFirestore(email);
+
+                actionsWrapper.appendChild(checkBtn);
+                actionsWrapper.appendChild(deleteBtn);
+                div.appendChild(emailSpan);
+                div.appendChild(actionsWrapper);
+                savedInboxesContainer.appendChild(div);
+            });
+        }
+
+        function displayMessages(messages) {
+            messageListBody.innerHTML = '';
+            if (messages.length === 0) {
+                messageListBody.innerHTML = `<p class="themed text-center text-[var(--text-secondary)]">This inbox is empty.</p>`;
+                return;
+            }
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'themed flex justify-between items-center p-3 hover:bg-[var(--bg-primary)] rounded-lg cursor-pointer';
+                div.onclick = () => handleViewMessage(msg.messageid);
+
+                const fromSpan = document.createElement('span');
+                fromSpan.className = 'font-bold text-[var(--text-primary)] themed';
+                fromSpan.textContent = msg.from;
+
+                div.appendChild(fromSpan);
+                messageListBody.appendChild(div);
+            });
+        }
+
         function showAlert(title, message) {
             alertTitle.textContent = title;
             alertBody.textContent = message;
@@ -353,59 +534,6 @@
                 toast.classList.add('toast-fade-out');
                 toast.addEventListener('animationend', () => toast.remove());
             }, 3000);
-        }
-
-        function displayGeneratedEmails(emails) {
-            emailListDiv.innerHTML = '';
-            currentEmails = emails; 
-            emails.forEach(email => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between font-mono text-sm p-2 bg-[var(--bg-secondary)] rounded themed';
-                
-                const emailSpan = document.createElement('span');
-                emailSpan.className = 'text-[var(--text-primary)] themed';
-                emailSpan.textContent = email;
-                
-                const copyBtn = document.createElement('button');
-                copyBtn.innerHTML = 'Copy';
-                copyBtn.className = 'ml-4 text-xs text-blue-400 hover:text-[var(--hover-accent)] transition-colors flex-shrink-0';
-                copyBtn.onclick = () => copyToClipboard(email, copyBtn);
-
-                div.appendChild(emailSpan);
-                div.appendChild(copyBtn);
-                emailListDiv.appendChild(div);
-            });
-            emptyState.classList.add('hidden');
-            resultsWrapper.classList.remove('hidden');
-        }
-        
-        function clearResults() {
-            emailListDiv.innerHTML = '';
-            resultsWrapper.classList.add('hidden');
-            emptyState.classList.remove('hidden');
-            currentEmails = [];
-        }
-
-        function handleCopyAll() {
-            if(currentEmails.length > 0) {
-                const allEmailsText = currentEmails.join('\n');
-                copyToClipboard(allEmailsText, copyAllBtn);
-            }
-        }
-
-        function copyToClipboard(text, buttonElement) {
-            if (!text || !navigator.clipboard) {
-                showToast('Clipboard not available.', 'error');
-                return;
-            }
-            navigator.clipboard.writeText(text).then(() => {
-                const originalHTML = buttonElement.innerHTML;
-                buttonElement.innerHTML = `<svg class="w-4 h-4 text-[var(--btn-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-                setTimeout(() => { buttonElement.innerHTML = originalHTML; }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-                showToast('Failed to copy.', 'error');
-            });
         }
 
         function setTheme(theme) {
@@ -430,8 +558,9 @@
         // --- Event Listeners ---
         generateBtn.addEventListener('click', handleGenerateEmail);
         closeAlertBtn.addEventListener('click', () => alertModal.classList.add('hidden'));
-        clearResultsBtn.addEventListener('click', clearResults);
-        copyAllBtn.addEventListener('click', handleCopyAll);
+        closeMessageListBtn.addEventListener('click', () => messageListModal.classList.add('hidden'));
+        closeMessageContentBtn.addEventListener('click', () => messageContentModal.classList.add('hidden'));
+
         themePickerButton.addEventListener('click', () => themePickerMenu.classList.toggle('hidden'));
         themeOptions.forEach(button => {
             button.addEventListener('click', () => {
