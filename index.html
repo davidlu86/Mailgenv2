@@ -137,7 +137,7 @@
                                     <optgroup label="Public Googlemail">
                                         <option value="8">Googlemail</option>
                                     </optgroup>
-                                    <optgroup label="Private Domains">
+                                    <optgroup label="Other Domains">
                                         <option value="1">Public Domain</option>
                                         <option value="4">Private Domain</option>
                                         <option value="5">Private Plus (+)</option>
@@ -218,7 +218,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // --- IMPORTANT: PASTE YOUR FIREBASE CONFIGURATION HERE ---
+        // --- ⬇️⬇️⬇️ IMPORTANT: PASTE YOUR FIREBASE CONFIGURATION HERE ⬇️⬇️⬇️ ---
+        // Make sure to replace the placeholder values below with the configuration 
+        // object from your Firebase project's settings.
 		const firebaseConfig = {
 		  apiKey: "AIzaSyDp6RfzizWNW08YW3jLEEAuRfr1jU1D8f4",
 		  authDomain: "mailgen-app-58e80.firebaseapp.com",
@@ -233,7 +235,6 @@
         // Initialize Firebase and Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-		const analytics = getAnalytics(app);
 
         // --- DOM Elements ---
         const apiKeyInput = document.getElementById('apiKey');
@@ -353,6 +354,9 @@
                 } else {
                     displaySavedInboxes([]); // Clear the list if no emails
                 }
+            }, (error) => {
+                console.error("Firestore snapshot error:", error);
+                showAlert("Connection Error", "Could not connect to the database. Please check your connection and Firebase configuration.");
             });
 
             // Theme setup
@@ -375,9 +379,14 @@
             }
             setLoading(generateBtn, true);
             const count = parseInt(emailCountSelect.value, 10);
-            const type = emailTypeSelect.value;
-            const url = `https://${API_HOST}/${count > 1 ? 'bulk-emails' : 'generate-email'}`;
-            const body = count > 1 ? { limit: count, options: [parseInt(type, 10)] } : { options: [parseInt(type, 10)] };
+            const type = parseInt(emailTypeSelect.value, 10);
+            const isBulk = count > 1;
+
+            const url = `https://${API_HOST}/${isBulk ? 'bulk-emails' : 'generate-email'}`;
+            
+            // CORRECTED: Use 'option' for bulk and 'options' for single, per API docs
+            const body = isBulk ? { limit: count, option: [type] } : { options: [type] };
+
             const fetchOptions = {
                 method: 'POST',
                 headers: { 'content-type': 'application/json', 'X-RapidAPI-Key': apiKey, 'X-RapidAPI-Host': API_HOST },
@@ -386,18 +395,25 @@
 
             try {
                 const response = await fetch(url, fetchOptions);
+                const data = await response.json(); // Read response body once
+
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                    console.error("API Error Response:", data);
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
                 }
+                
                 await saveApiKey(apiKey);
-                const data = await response.json();
+                
                 const emails = Array.isArray(data) ? data : (data.email ? [data.email] : []);
                 if (emails.length > 0) {
                     await saveEmailsToFirestore(emails);
                     showToast(`${emails.length} email(s) generated and saved!`, 'success');
+                } else {
+                    console.warn("API returned success but no emails:", data);
+                    showAlert("Warning", "The API responded successfully but did not return any email addresses.");
                 }
             } catch (error) {
+                console.error("Generate Email Failed:", error);
                 showAlert('Error', `Failed to generate email(s): ${error.message}`);
             } finally {
                 setLoading(generateBtn, false);
@@ -422,10 +438,13 @@
 
             try {
                 const response = await fetch(`https://${API_HOST}/inbox`, fetchOptions);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                }
                 displayMessages(data.messages || []);
             } catch (error) {
+                console.error("Check Inbox Failed:", error);
                 messageListBody.innerHTML = `<p class="themed text-center text-[var(--text-secondary)]">Failed to load messages: ${error.message}</p>`;
             }
         }
@@ -447,11 +466,14 @@
 
             try {
                 const response = await fetch(`https://${API_HOST}/messageid?id=${messageId}`, fetchOptions);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                }
                 messageContentSubject.textContent = data.from;
                 messageContentFrame.srcdoc = data.message;
             } catch (error) {
+                console.error("View Message Failed:", error);
                 messageContentSubject.textContent = 'Error';
                 messageContentFrame.srcdoc = `<div style="font-family: sans-serif; color: var(--text-danger);">Failed to load message: ${error.message}</div>`;
             }
