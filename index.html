@@ -23,7 +23,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Ensure the app takes up at least the full screen height */
         html, body {
             height: 100%;
         }
@@ -34,7 +33,6 @@
         .container {
             flex-grow: 1;
         }
-        /* Toast animation */
         @keyframes fade-out {
             from { opacity: 1; transform: translateY(0); }
             to { opacity: 0; transform: translateY(20px); }
@@ -56,7 +54,6 @@
              --hover-accent: #EC4899;
              --hover-text: #FFFFFF;
         }
-
         .dark {
             --bg-primary: #0D0D0D;
             --bg-secondary: #1A1A1A;
@@ -69,7 +66,6 @@
             --hover-accent: #FF0099;
             --hover-text: #FFFFFF;
         }
-        
         .stormy {
             --bg-primary: #2F3640;
             --bg-secondary: #353B48;
@@ -82,22 +78,17 @@
             --hover-accent: #00BFFF;
             --hover-text: #FFFFFF;
         }
-
-        /* Custom hover effect */
         .btn-hover:hover {
             box-shadow: 0 0 10px var(--hover-accent), 0 0 5px var(--hover-accent);
         }
-        
-        /* Smooth transitions for all theme-able elements */
         .themed {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
-
     </style>
 </head>
 <body class="themed bg-[var(--bg-primary)]">
 
-    <!-- Modern Theme Picker -->
+    <!-- Theme Picker -->
     <div id="theme-picker-container" class="fixed top-4 right-4 z-50">
         <button id="theme-picker-button" class="p-2 rounded-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] themed btn-hover">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69z"/><path d="m14.5 10.5 3 3"/><path d="M12 13.5v-3"/><path d="m9.5 10.5-3 3"/><path d="M7.5 7.5c.83.83 2.17.83 3 0"/><path d="M13.5 7.5c.83.83 2.17.83 3 0"/></svg>
@@ -109,7 +100,7 @@
         </div>
     </div>
 
-
+    <!-- Main Content -->
     <div class="container mx-auto p-4 md:p-8 max-w-2xl">
         <header class="text-center mb-8 relative">
             <h1 class="text-3xl md:text-4xl font-bold text-[var(--text-primary)] themed">Gmailnator API Client</h1>
@@ -121,11 +112,11 @@
             <div class="themed bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md mb-8">
                 <label for="apiKey" class="block text-lg font-medium text-[var(--text-primary)] mb-2 themed">RapidAPI Key</label>
                 <input type="password" id="apiKey" class="themed w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg focus:ring-2 focus:ring-[var(--hover-accent)]" placeholder="Enter your RapidAPI Key here">
-                <p class="text-sm text-[var(--text-secondary)] mt-2 themed">Your API key is saved in your browser's local storage for convenience.</p>
+                <p class="text-sm text-[var(--text-secondary)] mt-2 themed">Your API key is saved securely and automatically loaded.</p>
             </div>
 
+            <!-- Email Generation -->
             <div class="flex justify-center">
-                <!-- Generate Email Section -->
                 <div class="themed bg-[var(--bg-secondary)] p-6 rounded-xl shadow-md w-full">
                     <h2 class="themed text-2xl font-semibold mb-4 text-[var(--text-primary)]">Generate Emails</h2>
                     <div class="space-y-4">
@@ -152,11 +143,9 @@
                         </button>
                     </div>
                     <div class="themed mt-4 p-4 bg-[var(--bg-primary)] rounded-lg">
-                        <!-- Empty State Message -->
                         <div id="emptyState" class="themed text-center text-[var(--text-secondary)]">
                             Your generated emails will appear here.
                         </div>
-                        <!-- Results Wrapper -->
                         <div id="resultsWrapper" class="hidden">
                            <div id="emailList" class="space-y-2"></div>
                            <div id="resultActions" class="mt-4 flex gap-2">
@@ -181,25 +170,33 @@
     
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
-	
-	<script type="module"> // <-- Note: we change this to a module
-        // Import functions from our Firebase connection
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-        // --- Firebase Initialization (copied from your config) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSy...", // Paste your actual config here
-            authDomain: "your-project-id.firebaseapp.com",
-            projectId: "your-project-id",
-            storageBucket: "your-project-id.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
-        };
+    <!-- Main Application Logic -->
+    <script type="module">
+        // Import the functions you need from the Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- IMPORTANT: PASTE YOUR FIREBASE CONFIGURATION HERE ---
+        // Replace the placeholder values below with the configuration object
+        // from your Firebase project's settings.
+		const firebaseConfig = {
+		  apiKey: "AIzaSyDp6RfzizWNW08YW3jLEEAuRfr1jU1D8f4",
+		  authDomain: "mailgen-app-58e80.firebaseapp.com",
+		  projectId: "mailgen-app-58e80",
+		  storageBucket: "mailgen-app-58e80.firebasestorage.app",
+		  messagingSenderId: "1078523618685",
+		  appId: "1:1078523618685:web:5eb9f8bdc3f0f87e3a9814",
+		  measurementId: "G-HNNFZNK5T4"
+		};
+        // --- END OF FIREBASE CONFIGURATION ---
+
+        // Initialize Firebase and Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+		const analytics = getAnalytics(app);
 
-        // --- DOM Elements (no changes here) ---
+        // --- DOM Elements ---
         const apiKeyInput = document.getElementById('apiKey');
         const generateBtn = document.getElementById('generateBtn');
         const generateSpinner = generateBtn.querySelector('.spinner');
@@ -224,25 +221,31 @@
         const API_HOST = 'gmailnator.p.rapidapi.com';
         let currentEmails = [];
         let manualTheme = false;
-        let userId = null; // We will store a unique ID for the user's browser
+        let userId = null; // A unique ID for the user's browser/session
 
-        // --- NEW: Functions to get a unique User ID ---
-        // This gives us a way to save data for a user without a login system.
+        // --- User Identification (Robust Version) ---
         function getUserId() {
-            let id = localStorage.getItem('mailgenUserId');
-            if (!id) {
-                id = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-                localStorage.setItem('mailgenUserId', id);
+            try {
+                // Try to get the ID from local storage first
+                let id = localStorage.getItem('mailgenUserId');
+                if (!id) {
+                    id = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+                    localStorage.setItem('mailgenUserId', id);
+                }
+                return id;
+            } catch (e) {
+                // If local storage is disabled (e.g., private browsing), create a temporary ID
+                console.warn("Local storage is not available. Using a session-only user ID.");
+                return `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
             }
-            return id;
         }
         
-        // --- NEW: Functions to save/load API key from Firestore ---
+        // --- Firestore Functions ---
         async function saveApiKey(key) {
-            if (!userId) return;
+            if (!userId || !key) return;
             try {
                 const userDocRef = doc(db, "users", userId);
-                await setDoc(userDocRef, { apiKey: key });
+                await setDoc(userDocRef, { apiKey: key }, { merge: true });
             } catch (error) {
                 console.error("Error saving API key to Firestore: ", error);
                 showToast("Could not save API key.", "error");
@@ -262,12 +265,11 @@
             }
         }
 
-        // --- UPDATED: Initial Load ---
+        // --- Initial Load ---
         async function initialize() {
-            userId = getUserId(); // Get or create user ID
-            await loadApiKey(); // Load API key from Firestore
+            userId = getUserId();
+            await loadApiKey();
 
-            // Load theme (no changes here)
             const savedTheme = localStorage.getItem('theme');
             if(savedTheme) {
                 manualTheme = true;
@@ -278,7 +280,7 @@
             }
         }
 
-        // --- UPDATED: Main API Call Logic ---
+        // --- Main API Call Logic ---
         async function handleGenerateEmail() {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -289,7 +291,6 @@
             setLoading(generateBtn, true);
             clearResults();
 
-            // API call logic remains the same
             const count = parseInt(emailCountSelect.value, 10);
             const type = emailTypeSelect.value;
             const optionsArray = [parseInt(type, 10)];
@@ -309,7 +310,7 @@
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
                 
-                await saveApiKey(apiKey); // <-- UPDATED: Save key to Firestore on success
+                await saveApiKey(apiKey); // Save key to Firestore on success
                 
                 const data = await response.json();
                 let emails = [];
@@ -333,15 +334,14 @@
             }
         }
         
-        // --- All other functions (showAlert, showToast, displayGeneratedEmails, etc.) remain unchanged ---
-        // (For brevity, they are not repeated here, but they should be in your final script)
+        // --- UI & Utility Functions ---
         function showAlert(title, message) {
             alertTitle.textContent = title;
             alertBody.textContent = message;
             alertModal.classList.remove('hidden');
         }
 
-        function showToast(message, type = 'error') {
+        function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             const toastBg = type === 'error' ? 'bg-[var(--btn-danger)]' : 'bg-[var(--btn-success)]';
             const toastText = (type === 'error' || document.documentElement.className === 'stormy' || document.documentElement.className === 'light') ? 'text-white' : 'text-black';
@@ -393,13 +393,26 @@
             }
         }
 
+        function copyToClipboard(text, buttonElement) {
+            if (!text || !navigator.clipboard) {
+                showToast('Clipboard not available.', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = buttonElement.innerHTML;
+                buttonElement.innerHTML = `<svg class="w-4 h-4 text-[var(--btn-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                setTimeout(() => { buttonElement.innerHTML = originalHTML; }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                showToast('Failed to copy.', 'error');
+            });
+        }
+
         function setTheme(theme) {
              document.documentElement.className = theme;
              if(manualTheme) {
                 localStorage.setItem('theme', theme);
              }
-             const themeSelect = document.getElementById('theme-picker');
-             if(themeSelect) themeSelect.value = theme;
         }
         
         function setLoading(button, isLoading) {
@@ -414,18 +427,7 @@
             }
         }
         
-        function copyToClipboard(text, buttonElement) {
-            if (!text) return;
-            navigator.clipboard.writeText(text).then(() => {
-                const originalHTML = buttonElement.innerHTML;
-                buttonElement.innerHTML = `<svg class="w-4 h-4 text-[var(--btn-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-                setTimeout(() => { buttonElement.innerHTML = originalHTML; }, 2000);
-            }).catch(err => {
-                showToast('Failed to copy to clipboard.', 'error');
-            });
-        }
-        
-        // --- Event Listeners (no changes here) ---
+        // --- Event Listeners ---
         generateBtn.addEventListener('click', handleGenerateEmail);
         closeAlertBtn.addEventListener('click', () => alertModal.classList.add('hidden'));
         clearResultsBtn.addEventListener('click', clearResults);
@@ -451,7 +453,7 @@
             }
         });
 
-        // --- Initialize the app on script load ---
+        // --- Initialize the app ---
         initialize();
     </script>
 </body>
